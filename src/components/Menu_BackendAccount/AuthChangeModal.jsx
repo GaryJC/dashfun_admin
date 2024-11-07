@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Modal, Button, Form, Checkbox, Row, Col } from "antd";
 import API, { requestWithAuthHeader } from "../../modules/api";
 import Constants from "../../modules/constants";
@@ -51,6 +51,27 @@ export default function AuthChangeModal({ record, messageApi }) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    console.log("record", record);
+
+    // Extract authorities from record.auth
+    const authorityValues = [];
+    if (record) {
+      const auth = record.authorization;
+      if ((auth & Authority.UserManagement) !== 0) {
+        authorityValues.push(Authority.UserManagement);
+      }
+      if ((auth & Authority.TaskManagement) !== 0) {
+        authorityValues.push(Authority.TaskManagement);
+      }
+      if ((auth & Authority.GameManagement) !== 0) {
+        authorityValues.push(Authority.GameManagement);
+      }
+    }
+    // Set the form's authorities field
+    form.setFieldsValue({ authorities: authorityValues });
+  }, [record, form]);
+
   const handleOpen = () => {
     setOpen(true);
   };
@@ -74,7 +95,7 @@ export default function AuthChangeModal({ record, messageApi }) {
       });
       const { code, data, msg } = res.data;
       console.log("res", code, data, msg);
-      if (code == 0) {
+      if (code === 0) {
         console.log("success");
         setOpen(false);
         messageApi.success("Authorities changed successfully");
@@ -85,7 +106,7 @@ export default function AuthChangeModal({ record, messageApi }) {
       }
     } catch (e) {
       console.log("error", e);
-      messageApi.error("Authorities changed failed");
+      messageApi.error("Authorities change failed");
     }
     setLoading(false);
   };
@@ -96,10 +117,7 @@ export default function AuthChangeModal({ record, messageApi }) {
       <Modal
         title="Change Authorities"
         open={open}
-        // onOk={changeAuthHandler}
         onCancel={handleClose}
-        okText="Change"
-        // confirmLoading={loading}
         footer={null}
       >
         <Form

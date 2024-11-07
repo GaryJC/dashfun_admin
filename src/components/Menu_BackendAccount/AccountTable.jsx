@@ -106,7 +106,6 @@ export default function AccountTable() {
       key: "authorization",
       editable: true, // Mark this column as editable
       render: (auth) => {
-        // console.log(auth);
         auth === -1 && <></>;
         return <>{hasAuth(auth)}</>;
       },
