@@ -1,6 +1,10 @@
 import { useState } from "react";
 import { Menu, Layout } from "antd";
-import { DesktopOutlined, UserOutlined } from "@ant-design/icons";
+import {
+  DesktopOutlined,
+  UserOutlined,
+  UnorderedListOutlined,
+} from "@ant-design/icons";
 import AccountButton from "./AccountButton";
 import Constants from "../modules/constants";
 import PropTypes from "prop-types";
@@ -20,6 +24,7 @@ function getItem(label, key, icon, children) {
 const items = [
   getItem("Backend Accounts", MenuItems.BackendAccounts, <UserOutlined />),
   getItem("Games", MenuItems.Game, <DesktopOutlined />),
+  getItem("Task", MenuItems.Task, <UnorderedListOutlined />),
   // getItem("Games", "sub1", <UserOutlined />, [
   //   getItem("Create Game", MenuItems.CreateGame, <FileOutlined />),
   //   getItem("Update Game", "3"),

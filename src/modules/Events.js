@@ -8,6 +8,8 @@ const Events = {
   GameTable_Update: "Events_GameTable_Update",
 
   AccountTable_Update: "Events_AccountTable_Update",
+
+  TaskTable_Update: "Events_TaskTable_Update",
 };
 
 export default Events;

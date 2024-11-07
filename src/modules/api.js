@@ -18,6 +18,8 @@ const API = {
   gameSearch: serverUrl + "/api/v1/admin/game/search",
   gameUpdate: serverUrl + "/api/v1/admin/game/update",
 
+  getGameInfo: (gameID) => serverUrl + `/api/v1/admin/game/${gameID}`,
+
   updateImage: serverUrl + "/api/v1/admin/game/upload_image",
 
   userSearch: serverUrl + "/api/v1/admin/user/search",
@@ -27,6 +29,13 @@ const API = {
   updateUserStatus: serverUrl + "/api/v1/admin/user/update_status",
 
   activateUser: serverUrl + "/api/v1/admin/user/active",
+
+  taskCreate: serverUrl + "/api/v1/admin/task/create",
+  taskUpdate: serverUrl + "/api/v1/admin/task/update",
+  taskSearch: serverUrl + "/api/v1/admin/task/search",
+
+  getTaskInfo: (gameID) =>
+    serverUrl + `/api/v1/admin/task/get_by_game/${gameID}`,
 };
 
 export default API;

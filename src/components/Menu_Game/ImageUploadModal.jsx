@@ -103,6 +103,9 @@ export default function ImageUploadModal({ data, disabled }) {
         //   disabled={editingKey !== ""}
         disabled={disabled}
         onClick={onOpen}
+        style={{
+          marginInlineEnd: 8,
+        }}
       >
         Upload Image
       </Typography.Link>

@@ -7,6 +7,7 @@ import LoginModal from "./LoginModal";
 import GameTable from "./Menu_Game/GameTable";
 import JSEvent from "../utils/JSEvent";
 import Events from "../modules/Events";
+import TaskTable from "./Menu_Task/TaskTable";
 
 const { Content } = Layout;
 
@@ -28,6 +29,9 @@ const Home = () => {
         break;
       case MenuItems.Game:
         setCurrentContent(<GameTable />);
+        break;
+      case MenuItems.Task:
+        setCurrentContent(<TaskTable />);
         break;
       default:
         setCurrentContent(null);

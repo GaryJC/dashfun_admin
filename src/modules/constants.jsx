@@ -2,6 +2,7 @@ const Constants = {
   MenuItems: {
     BackendAccounts: "Backend Accounts",
     Game: "Game",
+    Task: "Task",
   },
 
   Authority: {
@@ -23,6 +24,29 @@ const Constants = {
     Normal: 1,
     ResetPassword: 2,
     Ban: 3,
+  },
+
+  Task: {
+    Type: {
+      Daily: 1,
+      Normal: 2,
+    },
+    Category: {
+      Challenge: 1,
+      Daily: 2,
+    },
+    RequireType: {
+      PlayAnyGame: 1,
+      PlaySpecificGame: 2,
+      UpgradeToSpecificLevel: 3,
+      JoinTelegramChannel: 4,
+      FollowX: 5,
+      ConsumeXTelegramStars: 6,
+    },
+    RewardType: {
+      DashfunPoint: 2,
+      GamePoint: 3,
+    },
   },
 };
 

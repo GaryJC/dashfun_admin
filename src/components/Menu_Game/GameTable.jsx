@@ -8,6 +8,7 @@ import {
   Typography,
   Tag,
   Select,
+  message,
 } from "antd";
 import CreateGame from "./CreateGame";
 import { useEffect, useState } from "react";
@@ -17,19 +18,41 @@ import JSEvent from "../../utils/JSEvent";
 import Events from "../../modules/Events";
 import GameFilter from "./GameFilter";
 import Constants from "../../modules/constants";
+import usePagination from "../../utils/usePagination";
+import GameTaskModal from "./GameTaskModal";
 
 const GameStatus = Constants.GameStatus;
 
-const pageSize = 10;
+// const pageSize = 10;
 
 export default function GameTable() {
   const [form] = Form.useForm();
   const [gameData, setGameData] = useState([]);
-  const [currentPage, setCurrentPage] = useState(1);
+  // const [currentPage, setCurrentPage] = useState(1);
+  // const [totalPages, setTotalPages] = useState(1);
+  const { paginationParams, changePageHandler, changePaginationParams } =
+    usePagination();
+
   const [loading, setLoading] = useState(false);
   const [editingKey, setEditingKey] = useState("");
 
   const [editingData, setEditingData] = useState({});
+
+  const [messageApi, contextHolder] = message.useMessage();
+
+  /*
+  const [taskModalOpen, setTaskModalOpen] = useState(false);
+  const [gameID, setGameID] = useState(null);
+
+  const openTaskModal = (id) => {
+    setGameID(id);
+    setTaskModalOpen(true);
+  };
+
+  const closeTaskModal = () => {
+    setTaskModalOpen(false);
+  };
+  */
 
   const isEditing = (record) => record.id === editingKey;
 
@@ -59,13 +82,14 @@ export default function GameTable() {
       try {
         const res = await requestWithAuthHeader.post(API.gameSearch, {
           ...filter,
-          page: currentPage,
-          size: pageSize,
+          page: paginationParams.currentPage,
+          size: paginationParams.pageSize,
         });
 
         const { code, data, msg } = res.data;
         if (code === 0) {
           setGameData(data.data);
+          changePaginationParams(data);
         } else {
           console.log("error", msg);
         }
@@ -82,16 +106,18 @@ export default function GameTable() {
     return () => {
       JSEvent.remove(Events.GameTable_Update, getGameData);
     };
-  }, [currentPage]);
+  }, [paginationParams.currentPage]);
 
   const onEditing = (val, dataIndex) => {
     // setEditingData((pre) => ({ ...pre, [e.target.name]: e.target.value }));
-    console.log("e", val, dataIndex);
+    setEditingData((pre) => ({ ...pre, [dataIndex]: val }));
+    console.log("e", val, dataIndex, editingData);
   };
 
   const onSave = async (id) => {
     // form.validateFields();
     const updatedData = { id, ...editingData };
+    console.log("updatedData", updatedData);
     try {
       const res = await requestWithAuthHeader.post(API.gameUpdate, updatedData);
       const { code, data, msg } = res.data;
@@ -100,9 +126,13 @@ export default function GameTable() {
         JSEvent.emit(Events.GameTable_Update);
         setEditingKey("");
         setEditingData({});
+        messageApi.success("Game updated successfully");
+      } else {
+        messageApi.error(msg);
       }
     } catch (e) {
       console.log("error", e);
+      messageApi.error("Game update failed");
     }
   };
 
@@ -142,13 +172,16 @@ export default function GameTable() {
     if (dataIndex == "status") {
       inputNode = (
         <Select
-          defaultValue={record.status}
+          defaultValue={GameStatus.Online}
           onChange={(value) => onEditing(value, dataIndex)}
+          style={{
+            minWidth: 100,
+          }}
         >
           <Select.Option value={GameStatus.Online}>Online</Select.Option>
           <Select.Option value={GameStatus.Removed}>Removed</Select.Option>
           <Select.Option value={GameStatus.Pending}>Pending</Select.Option>
-          <Select.Option value={GameStatus.Normal}>Normal</Select.Option>
+          {/* <Select.Option value={GameStatus.Normal}>Online</Select.Option> */}
         </Select>
       );
     }
@@ -209,42 +242,43 @@ export default function GameTable() {
       key: "status",
       editable: true,
       render: (_, record) => {
-        const editable = isEditing(record);
+        // const editable = isEditing(record);
         const status = record.status;
-        console.log("status", status, editable);
-        if (editable) {
-          return (
-            <Select
-              defaultValue={status}
-              onChange={(value) => {
-                const newData = [...gameData];
-                const index = newData.findIndex(
-                  (item) => record.id === item.id
-                );
-                if (index > -1) {
-                  const item = newData[index];
-                  newData.splice(index, 1, { ...item, status: value });
-                  setGameData(newData);
-                }
-              }}
-            >
-              <Select.Option value={GameStatus.Online}>Online</Select.Option>
-              <Select.Option value={GameStatus.Removed}>Removed</Select.Option>
-              <Select.Option value={GameStatus.Pending}>Pending</Select.Option>
-              <Select.Option value={GameStatus.Normal}>Normal</Select.Option>
-            </Select>
-          );
+        // console.log("status", status, editable);
+        // if (editable) {
+        //   return (
+        //     <Select
+        //       defaultValue={status}
+        //       onChange={(value) => {
+        //         const newData = [...gameData];
+        //         const index = newData.findIndex(
+        //           (item) => record.id === item.id
+        //         );
+        //         if (index > -1) {
+        //           const item = newData[index];
+        //           newData.splice(index, 1, { ...item, status: value });
+        //           setGameData(newData);
+        //         }
+        //       }}
+        //     >
+        //       <Select.Option value={GameStatus.Online}>Online</Select.Option>
+        //       <Select.Option value={GameStatus.Removed}>Removed</Select.Option>
+        //       <Select.Option value={GameStatus.Pending}>Pending</Select.Option>
+        //       <Select.Option value={GameStatus.Normal}>Normal</Select.Option>
+        //     </Select>
+        //   );
+        // } else {
+        if (status === GameStatus.Online) {
+          return <Tag color="green">Online</Tag>;
+        } else if (status === GameStatus.Removed) {
+          return <Tag color="red">Removed</Tag>;
+        } else if (status === GameStatus.Pending) {
+          return <Tag color="blue">Pending</Tag>;
         } else {
-          if (status === GameStatus.Online) {
-            return <Tag color="green">Online</Tag>;
-          } else if (status === GameStatus.Removed) {
-            return <Tag color="red">Removed</Tag>;
-          } else if (status === GameStatus.Pending) {
-            return <Tag color="blue">Pending</Tag>;
-          } else {
-            return <Tag color="orange">Normal</Tag>;
-          }
+          // return <Tag color="orange">Normal</Tag>;
+          return <Tag color="green">Online</Tag>;
         }
+        // }
       },
     },
     {
@@ -317,6 +351,12 @@ export default function GameTable() {
               Edit
             </Typography.Link>
             <ImageUploadModal data={record} disabled={editingKey != ""} />
+            {/* <Typography.Link
+              disabled={editingKey !== ""}
+              onClick={() => openTaskModal(record.id)}
+            >
+              Task
+            </Typography.Link> */}
           </Space>
         );
       },
@@ -341,6 +381,7 @@ export default function GameTable() {
 
   return (
     <Form form={form} component={false}>
+      {contextHolder}
       <CreateGame />
       <GameFilter />
       <Table
@@ -354,14 +395,19 @@ export default function GameTable() {
         columns={mergedColumns}
         rowClassName="editable-row"
         pagination={{
-          pageSize: 10,
+          ...paginationParams,
           onChange: (page) => {
-            setCurrentPage(page);
+            changePageHandler(page);
             cancel();
           },
         }}
         rowKey="id" // Use the id field as a unique key for each row
       />
+      {/* <GameTaskModal
+        taskModalOpen={taskModalOpen}
+        closeTaskModal={closeTaskModal}
+        gameID={gameID}
+      /> */}
     </Form>
   );
 }

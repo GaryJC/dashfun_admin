@@ -9,10 +9,11 @@ import AuthChangeModal from "./AuthChangeModal";
 import StatusChangeModal from "./StatusChangeModal";
 import AccountFilter from "./AccountFilter";
 import ResetPasswordButton from "./ResetPasswordButton";
+import usePagination from "../../utils/usePagination";
 
 const { UserStatus, Authority } = Constants;
 
-const pageSize = 10;
+// const pageSize = 10;
 
 const hasAuth = (auth) => {
   const auths = [];
@@ -39,7 +40,8 @@ const hasAuth = (auth) => {
 
 export default function AccountTable() {
   const [form] = Form.useForm();
-  const [currentPage, setCurrentPage] = useState(1);
+  const { paginationParams, changePageHandler, changePaginationParams } =
+    usePagination();
 
   const [loading, setLoading] = useState(false);
 
@@ -55,8 +57,8 @@ export default function AccountTable() {
       try {
         const res = await requestWithAuthHeader.post(API.userSearch, {
           ...filter,
-          page: currentPage,
-          size: pageSize,
+          page: paginationParams.currentPage,
+          size: paginationParams.pageSize,
         });
 
         const { code, data, msg } = res.data;
@@ -83,7 +85,7 @@ export default function AccountTable() {
       JSEvent.remove(Events.AccountTable_Update, getUserData);
       JSEvent.remove(Events.AccountTable_Update, getUserData);
     };
-  }, [currentPage]);
+  }, [paginationParams.currentPage]);
 
   const columns = [
     {
@@ -216,7 +218,7 @@ export default function AccountTable() {
         pagination={{
           pageSize: 10,
           onChange: (page) => {
-            setCurrentPage(page);
+            changePageHandler(page);
           },
         }}
       />
