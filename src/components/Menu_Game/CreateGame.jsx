@@ -1,7 +1,7 @@
 import { Form, Input, Select, Button, Space, Modal, Alert } from "antd";
 import { PlusCircleOutlined } from "@ant-design/icons";
 import API, { requestWithAuthHeader } from "../../modules/api";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import JSEvent from "../../utils/JSEvent";
 
 export default function CreateGame() {
@@ -9,6 +9,26 @@ export default function CreateGame() {
 
   const [isOpen, setIsOpen] = useState(false);
   const [feedback, setFeedback] = useState(null);
+  const [genres, setGenres] = useState([]);
+
+  useEffect(()=>{
+    const getGenres = async () => {
+      try {
+        const res = await requestWithAuthHeader.post(API.gameGenres);
+        const { code, data, msg } = res.data;
+        if (code == 0) {
+          setGenres(data);
+        } else {
+          console.log("error", msg);
+        }
+      } catch (e) {
+        console.log(e);
+      }
+    }
+    getGenres();
+  },[])
+
+  console.log("genres", genres);
 
   const onOpen = () => {
     setIsOpen(true);

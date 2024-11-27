@@ -36,12 +36,12 @@ const Constants = {
       Daily: 2,
     },
     RequireType: {
-      PlayAnyGame: 1,
-      PlaySpecificGame: 2,
-      UpgradeToSpecificLevel: 3,
-      JoinTelegramChannel: 4,
+      PlayRandomGame: 1,
+      PlayGame:2,
+      LevelUp:3,
+      JoinTGChannel: 4,
       FollowX: 5,
-      ConsumeXTelegramStars: 6,
+      SpendTGStars: 6,
     },
     RewardType: {
       DashfunPoint: 2,

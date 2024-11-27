@@ -1,23 +1,24 @@
+import { useState } from "react";
 import {
   Modal,
   Button,
   Form,
   Input,
   Select,
-  Radio,
   InputNumber,
   Alert,
   Space,
 } from "antd";
 import { EditOutlined } from "@ant-design/icons";
-import { useState } from "react";
 import Constants from "../../modules/constants";
 import API, { requestWithAuthHeader } from "../../modules/api";
 import JSEvent from "../../utils/JSEvent";
 import Events from "../../modules/Events";
+import { clearFormErrors, formValidationHandler } from "./FormHandler";
 
 const { Task } = Constants;
 
+// Component for rendering Task Type form item with Select options
 export const TaskTypeFormItem = (props) => (
   <Select {...props}>
     <Select.Option value={Task.Type.Normal}>Normal Task</Select.Option>
@@ -25,41 +26,30 @@ export const TaskTypeFormItem = (props) => (
   </Select>
 );
 
+// Component for rendering Task Category form item with Select options
 export const TaskCategoryFormItem = (props) => (
   <Select {...props}>
-    <Select.Option value={Task.Category.Challenge}>
-      Challenge Task
-    </Select.Option>
+    <Select.Option value={Task.Category.Challenge}>Challenge Task</Select.Option>
     <Select.Option value={Task.Category.Daily}>Daily Task</Select.Option>
   </Select>
 );
 
+// Component for rendering Task Requirement Type form item with Select options
 export const TaskRequireTypeFormItem = (props) => (
   <Select {...props}>
-    <Select.Option value={Task.RequireType.PlayAnyGame}>
-      Play Any Game
-    </Select.Option>
-    <Select.Option value={Task.RequireType.PlaySpecificGame}>
-      Play Specific Game
-    </Select.Option>
-    <Select.Option value={Task.RequireType.UpgradeToSpecificLevel}>
-      Upgrade to Specific Level
-    </Select.Option>
-    <Select.Option value={Task.RequireType.JoinTelegramChannel}>
-      Join Telegram Channel
-    </Select.Option>
+    <Select.Option value={Task.RequireType.PlayRandomGame}>Play Random Game</Select.Option>
+    <Select.Option value={Task.RequireType.PlayGame}>Play Specific Game</Select.Option>
+    <Select.Option value={Task.RequireType.LevelUp}>Level Up in Game</Select.Option>
+    <Select.Option value={Task.RequireType.JoinTGChannel}>Join Telegram Channel</Select.Option>
     <Select.Option value={Task.RequireType.FollowX}>Follow X</Select.Option>
-    <Select.Option value={Task.RequireType.ConsumeXTelegramStars}>
-      Consume X Telegram Stars
-    </Select.Option>
+    <Select.Option value={Task.RequireType.SpendTGStars}>Spend Telegram Stars</Select.Option>
   </Select>
 );
 
+// Component for rendering Task Reward Type form item with Select options
 export const TaskRewardTypeFormItem = (props) => (
   <Select {...props}>
-    <Select.Option value={Task.RewardType.DashfunPoint}>
-      DashFun Point
-    </Select.Option>
+    <Select.Option value={Task.RewardType.DashfunPoint}>DashFun Point</Select.Option>
     <Select.Option value={Task.RewardType.GamePoint}>Game Point</Select.Option>
   </Select>
 );
@@ -67,17 +57,12 @@ export const TaskRewardTypeFormItem = (props) => (
 export default function CreateTaskModal() {
   const [visible, setVisible] = useState(false);
   const [form] = Form.useForm();
-  //   const [validated, setValidated] = useState(false);
   const [gameData, setGameData] = useState([]);
-  const [gameID, setGameID] = useState(null);
-  const [gameName, setGameName] = useState(null);
   const [loading, setLoading] = useState(false);
   const [feedback, setFeedback] = useState({
     type: "",
     message: "",
   });
-
-  let timeout;
 
   const showModal = () => {
     setVisible(true);
@@ -95,36 +80,41 @@ export default function CreateTaskModal() {
   const onFinish = async (values) => {
     setLoading(true);
     console.log("Received values:", values);
-    // setVisible(false);
-    const taskData = {
-      game_id: gameID,
-      ...values,
-    };
-    console.log("taskData", taskData);
+
     try {
+      // Clear previous validation errors
+      clearFormErrors();
+
+      const gameID = form.getFieldValue("game_id");
+      const validated = formValidationHandler(form, values, setLoading);
+      if (!validated) return;
+
+      // Prepare task data for submission
+      const taskData = {
+        game_id: gameID,
+        ...values,
+      };
+      console.log("taskData", taskData);
+
       const res = await requestWithAuthHeader.post(API.taskCreate, taskData);
       const { code, data, msg } = res.data;
       console.log("res", code, data, msg);
 
       if (code === 0) {
         setFeedback({ type: "success", message: "Task created successfully" });
-        // form.resetFields();
         JSEvent.emit(Events.TaskTable_Update);
       } else {
-        setFeedback({ type: "error", message: msg });
+        setFeedback({ type: "error", message: msg || "Error creating task" });
       }
     } catch (e) {
       console.log("error", e);
     }
+
     setLoading(false);
   };
 
   const handleSearch = async (value) => {
     console.log("search:", value);
-    if (timeout) {
-      clearTimeout(timeout);
-      timeout = null;
-    }
     const fetchGameData = async () => {
       try {
         const res = await requestWithAuthHeader.post(API.gameSearch, {
@@ -133,47 +123,21 @@ export default function CreateTaskModal() {
           size: 20,
         });
         const { code, data, msg } = res.data;
-        console.log("search res", code, data, msg);
         if (code === 0 && data.data.length > 0) {
-          const gameData = data.data.map((item) => {
-            return {
-              value: item.id,
-              label: item.name,
-            };
-          });
+          const gameData = data.data.map((item) => ({
+            value: item.id,
+            label: item.name,
+          }));
           setGameData(gameData);
         }
       } catch (e) {
         console.log("error", e);
       }
     };
+
     if (value) {
-      timeout = setTimeout(fetchGameData, 300);
+      fetchGameData();
     }
-  };
-
-  const onSearchGameID = async (gameID) => {
-    try {
-      const res = await requestWithAuthHeader.post(API.getGameInfo(gameID));
-      const { code, data, msg } = res.data;
-      console.log("search res", code, data, msg);
-      if (code === 0) {
-        if (data) {
-          setGameName(data.name);
-          setGameID(data.id);
-        } else {
-          setGameName("not found");
-          setGameID(0);
-        }
-      }
-    } catch (e) {
-      console.log("error", e);
-    }
-  };
-
-  const handleChange = (value) => {
-    console.log("select:", value);
-    setGameID(value);
   };
 
   return (
@@ -189,46 +153,35 @@ export default function CreateTaskModal() {
       <Modal
         title="Create Task"
         open={visible}
-        // onOk={handleOk}
         onCancel={handleCancel}
         centered
         footer={null}
       >
-        <Input.Search
-          placeholder="input game ID"
-          enterButton="Search"
-          onSearch={onSearchGameID}
-        />
-        <p>Game Name: {gameName}</p>
-
-        <Alert
-          message="If no valid game is selected, the task will default to the Dashfun task. You can also search for a game by name."
-          className="my-2"
-        />
-
-        <Select
-          defaultValue={null}
-          showSearch
-          value={gameID}
-          placeholder="input a game name"
-          defaultActiveFirstOption={false}
-          filterOption={false}
-          onSearch={handleSearch}
-          onChange={handleChange}
-          notFoundContent={null}
-          options={(gameData || []).map((d) => ({
-            value: d.value,
-            label: d.label,
-          }))}
-          style={{ width: "100%", marginBottom: "1rem" }}
-        />
-
         <Form
           form={form}
           name="createTask"
           onFinish={onFinish}
-          //   disabled={validated}
         >
+          {/* Game Select Input */}
+          <Form.Item
+            label="Select Game"
+            name="game_id"
+          >
+            <Select
+              showSearch
+              value={form.getFieldValue("game_id")}
+              onSearch={handleSearch}
+              onChange={(value) => form.setFieldsValue({ game_id: value })}
+              placeholder="Select or type a game"
+              filterOption={false}
+              mode="combobox"
+              options={(gameData || []).map((d) => ({
+                value: d.value,
+                label: d.label,
+              }))}
+            />
+          </Form.Item>
+
           <Form.Item label="Task ID" name="id">
             <Input />
           </Form.Item>
@@ -239,10 +192,11 @@ export default function CreateTaskModal() {
           >
             <Input />
           </Form.Item>
+
           <Form.Item
             label="Task Type"
             name="task_type"
-            rules={[{ required: true, message: "Please input the task type!" }]}
+            rules={[{ required: true, message: "Please select the task type!" }]}
           >
             <TaskTypeFormItem />
           </Form.Item>
@@ -250,65 +204,44 @@ export default function CreateTaskModal() {
           <Form.Item
             label="Category"
             name="category"
-            rules={[{ required: true, message: "Please input the category!" }]}
+            rules={[{ required: true, message: "Please select the category!" }]}
           >
             <TaskCategoryFormItem />
           </Form.Item>
 
-          <Form.Item label="Is Open" name="open">
-            <Radio.Group>
-              <Radio value={true}>Open</Radio>
-              <Radio value={false}>Close</Radio>
-            </Radio.Group>
-          </Form.Item>
-
-          <p>Requirments</p>
           <Form.Item
-            label="Type"
+            label="Task Requirement Type"
             name={["require", "type"]}
-            rules={[
-              { required: true, message: "Please input the require type!" },
-            ]}
+            rules={[{ required: true, message: "Please select the requirement type!" }]}
           >
             <TaskRequireTypeFormItem />
           </Form.Item>
 
+          {/* Other Form Fields */}
           <Form.Item
             label="Count"
             name={["require", "count"]}
             rules={[
-              { required: true, message: "Please input the require count!" },
+              {
+                required: true,
+                type: "number",
+                min: 1,
+                message: "'Count' must be a positive number",
+              },
             ]}
           >
-            <InputNumber />
+            <InputNumber min={1} />
           </Form.Item>
+
           <Form.Item label="Condition" name={["require", "condition"]}>
             <Input />
           </Form.Item>
+
           <Form.Item label="Link" name={["require", "link"]}>
             <Input />
           </Form.Item>
 
-          <p>Reward</p>
-          <Form.Item
-            label="Type"
-            name={["reward", "type"]}
-            rules={[
-              { required: true, message: "Please input the reward type!" },
-            ]}
-          >
-            <TaskRewardTypeFormItem />
-          </Form.Item>
-          <Form.Item
-            label="Amount"
-            name={["reward", "amount"]}
-            rules={[
-              { required: true, message: "Please input the reward amount!" },
-            ]}
-          >
-            <InputNumber />
-          </Form.Item>
-
+          {/* Feedback Alert for success or error messages */}
           {feedback.type && (
             <Alert
               message={feedback.message}

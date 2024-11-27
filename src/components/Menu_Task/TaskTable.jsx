@@ -14,6 +14,7 @@ import CreateTaskModal, {
   TaskRewardTypeFormItem,
   TaskTypeFormItem,
 } from "./CreateTaskModal";
+import { formValidationHandler, clearFormErrors } from "./FormHandler";
 import { useCallback, useEffect, useState } from "react";
 import API, { requestWithAuthHeader } from "../../modules/api";
 import JSEvent from "../../utils/JSEvent";
@@ -92,7 +93,13 @@ export default function TaskTable() {
   const onUpdate = async (record) => {
     // console.log("save", id);
     console.log("save", record);
+    clearFormErrors(form);
     const row = await form.getFieldsValue();
+
+    const validated = formValidationHandler(form, row, setLoading);
+    console.log("validated", validated);
+    if (!validated) return;
+
     const updatedValues = {
       ...record,
       ...row,
@@ -137,7 +144,7 @@ export default function TaskTable() {
       title: "Game ID",
       dataIndex: "game_id",
       key: "game_id",
-      editable: false,
+      editable: true,
     },
     {
       title: "Task Type",
@@ -351,12 +358,12 @@ export default function TaskTable() {
           <Form.Item
             name={dataIndex}
             style={{ margin: 0 }}
-            rules={[
-              {
-                required: true,
-                message: `Please Input ${title}!`,
-              },
-            ]}
+            // rules={[
+            //   {
+            //     required: true,
+            //     message: `Please Input ${title}!`,
+            //   },
+            // ]}
           >
             {inputNode}
           </Form.Item>
