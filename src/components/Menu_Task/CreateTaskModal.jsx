@@ -107,7 +107,7 @@ export default function CreateTaskModal() {
         setFeedback({ type: "error", message: msg || "Error creating task" });
       }
     } catch (e) {
-      console.log("error", e);
+      setFeedback({ type: "error", message: "Error creating task" });
     }
 
     setLoading(false);

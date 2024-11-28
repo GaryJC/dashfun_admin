@@ -17,7 +17,7 @@ const API = {
   gameCreate: serverUrl + "/api/v1/admin/game/create",
   gameSearch: serverUrl + "/api/v1/admin/game/search",
   gameUpdate: serverUrl + "/api/v1/admin/game/update",
-  gameGenres: serverUrl + "/api/v1/admin/game/genres",
+  gameGenres: serverUrl + "/api/v1/game/genres",
 
   getGameInfo: (gameID) => serverUrl + `/api/v1/admin/game/${gameID}`,
 

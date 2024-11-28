@@ -10,7 +10,7 @@ import {
   Select,
   message,
 } from "antd";
-import CreateGame from "./CreateGame";
+import CreateGame, { GenreSelect } from "./CreateGame";
 import { useEffect, useState } from "react";
 import API, { getImageUrl, requestWithAuthHeader } from "../../modules/api";
 import ImageUploadModal from "./ImageUploadModal";
@@ -19,9 +19,10 @@ import Events from "../../modules/Events";
 import GameFilter from "./GameFilter";
 import Constants from "../../modules/constants";
 import usePagination from "../../utils/usePagination";
-import GameTaskModal from "./GameTaskModal";
+import { data } from "autoprefixer";
 
 const GameStatus = Constants.GameStatus;
+const GameGenre = Constants.GameGenre;
 
 // const pageSize = 10;
 
@@ -148,11 +149,16 @@ export default function GameTable() {
   }) => {
     // console.log("record", record);
     let inputNode = <Input />;
-    if (["name", "description", "genre", "url"].includes(dataIndex)) {
+    if (["name", "description", "url"].includes(dataIndex)) {
       inputNode = (
         <Input onChange={(e) => onEditing(e.target.value, dataIndex)} />
       );
     }
+
+    if(dataIndex == "genre"){
+      inputNode = <GenreSelect/>
+    }
+
 
     //Handle image fields (iconUrl, mainImageUrl, logoUrl) with the Upload component
     // if (["iconUrl", "mainImageUrl", "logoUrl"].includes(dataIndex)) {
@@ -285,7 +291,23 @@ export default function GameTable() {
       title: "Genre",
       dataIndex: "genre",
       key: "genre",
-      editable: false,
+      editable: true,
+      render: (_, { genre }) => {
+        const genres = [];
+        if(genre & GameGenre.Card){
+          genres.push(<Tag color="blue">Card</Tag>);
+        }
+        if(genre & GameGenre.Action){
+          genres.push(<Tag color="green">Action</Tag>);
+        }
+        if(genre & GameGenre.RPG){
+          genres.push(<Tag color="orange">RPG</Tag>);
+        }
+        if(genre & GameGenre.Strategy){
+          genres.push(<Tag color="purple">Strategy</Tag>);
+        }
+        return genres;
+      }
     },
     {
       title: "URL",

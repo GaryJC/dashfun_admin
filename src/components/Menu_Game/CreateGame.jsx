@@ -3,18 +3,15 @@ import { PlusCircleOutlined } from "@ant-design/icons";
 import API, { requestWithAuthHeader } from "../../modules/api";
 import { useEffect, useState } from "react";
 import JSEvent from "../../utils/JSEvent";
+import Events from "../../modules/Events";
 
-export default function CreateGame() {
-  const [form] = Form.useForm();
-
-  const [isOpen, setIsOpen] = useState(false);
-  const [feedback, setFeedback] = useState(null);
+export const GenreSelect = () => {
   const [genres, setGenres] = useState([]);
 
   useEffect(()=>{
     const getGenres = async () => {
       try {
-        const res = await requestWithAuthHeader.post(API.gameGenres);
+        const res = await requestWithAuthHeader.get(API.gameGenres);
         const { code, data, msg } = res.data;
         if (code == 0) {
           setGenres(data);
@@ -26,9 +23,24 @@ export default function CreateGame() {
       }
     }
     getGenres();
-  },[])
+  },[]);
 
-  console.log("genres", genres);
+  return(
+    <Select mode="multiple">
+      {
+        genres.map((g) => (
+          <Select.Option key={g.id} value={g.id}>{g.name}</Select.Option>
+        ))
+      }
+    </Select>
+  )
+}
+
+export default function CreateGame() {
+  const [form] = Form.useForm();
+
+  const [isOpen, setIsOpen] = useState(false);
+  const [feedback, setFeedback] = useState(null);
 
   const onOpen = () => {
     setIsOpen(true);
@@ -54,7 +66,7 @@ export default function CreateGame() {
       if (code == 0) {
         console.log("success");
         setFeedback({ type: "success", msg: "Game created successfully" });
-        JSEvent.emit("GameTable_Update");
+        JSEvent.emit(Events.GameTable_Update);
         form.resetFields();
       } else {
         console.log("error", msg);
@@ -118,12 +130,7 @@ export default function CreateGame() {
             name="genre"
             rules={[{ required: true, message: "Please select the genre" }]}
           >
-            <Select mode="multiple">
-              <Select.Option value={1}>Action</Select.Option>
-              <Select.Option value={2}>Adventure</Select.Option>
-              <Select.Option value={3}>RPG</Select.Option>
-              <Select.Option value={4}>Strategy</Select.Option>
-            </Select>
+            <GenreSelect />
           </Form.Item>
           {feedback && (
             <Alert
