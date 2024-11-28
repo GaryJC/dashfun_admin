@@ -83,7 +83,7 @@ export default function CreateTaskModal() {
 
     try {
       // Clear previous validation errors
-      clearFormErrors();
+      clearFormErrors(form);
 
       const gameID = form.getFieldValue("game_id");
       const validated = formValidationHandler(form, values, setLoading);
@@ -172,7 +172,7 @@ export default function CreateTaskModal() {
               value={form.getFieldValue("game_id")}
               onSearch={handleSearch}
               onChange={(value) => form.setFieldsValue({ game_id: value })}
-              placeholder="Select or type a game"
+              placeholder="Select a game or type a game ID"
               filterOption={false}
               mode="combobox"
               options={(gameData || []).map((d) => ({
@@ -209,10 +209,11 @@ export default function CreateTaskModal() {
             <TaskCategoryFormItem />
           </Form.Item>
 
+          <p>Requirments</p>
           <Form.Item
             label="Task Requirement Type"
             name={["require", "type"]}
-            rules={[{ required: true, message: "Please select the requirement type!" }]}
+            // rules={[{ required: true, message: "Please select the requirement type!" }]}
           >
             <TaskRequireTypeFormItem />
           </Form.Item>
@@ -223,10 +224,10 @@ export default function CreateTaskModal() {
             name={["require", "count"]}
             rules={[
               {
-                required: true,
+                // required: true,
                 type: "number",
                 min: 1,
-                message: "'Count' must be a positive number",
+                // message: "It must be a positive number",
               },
             ]}
           >
@@ -239,6 +240,25 @@ export default function CreateTaskModal() {
 
           <Form.Item label="Link" name={["require", "link"]}>
             <Input />
+          </Form.Item>
+
+          <p>Reward</p>
+          <Form.Item
+            label="Type"
+            name={["reward", "type"]}
+            // rules={[
+            //   { required: true, message: "Please input the reward type!" },
+            // ]}
+          >
+            <TaskRewardTypeFormItem />
+          </Form.Item>
+
+          <Form.Item
+            label="Amount"
+            name={["reward", "amount"]}
+            // rules={[{ required: true, message: "Please input the reward amount!" }]}
+          >
+            <InputNumber />
           </Form.Item>
 
           {/* Feedback Alert for success or error messages */}
