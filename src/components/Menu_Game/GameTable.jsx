@@ -9,6 +9,7 @@ import {
   Tag,
   Select,
   message,
+  DatePicker,
 } from "antd";
 import CreateGame, { GenreSelect } from "./CreateGame";
 import { useEffect, useState } from "react";
@@ -111,6 +112,9 @@ export default function GameTable() {
 
   const onEditing = (val, dataIndex) => {
     // setEditingData((pre) => ({ ...pre, [e.target.name]: e.target.value }));
+    if (dataIndex == "openTime") {
+      val = val ? val.valueOf() : 0;
+    }
     setEditingData((pre) => ({ ...pre, [dataIndex]: val }));
     console.log("e", val, dataIndex, editingData);
   };
@@ -155,10 +159,13 @@ export default function GameTable() {
       );
     }
 
-    if(dataIndex == "genre"){
-      inputNode = <GenreSelect/>
+    if (dataIndex == "genre") {
+      inputNode = <GenreSelect />
     }
 
+    if (dataIndex == "openTime") {
+      inputNode = <DatePicker onChange={(date) => onEditing(date, dataIndex)} />
+    }
 
     //Handle image fields (iconUrl, mainImageUrl, logoUrl) with the Upload component
     // if (["iconUrl", "mainImageUrl", "logoUrl"].includes(dataIndex)) {
@@ -187,7 +194,7 @@ export default function GameTable() {
           <Select.Option value={GameStatus.Online}>Online</Select.Option>
           <Select.Option value={GameStatus.Removed}>Removed</Select.Option>
           <Select.Option value={GameStatus.Pending}>Pending</Select.Option>
-          {/* <Select.Option value={GameStatus.Normal}>Online</Select.Option> */}
+          {/* <Select.Option value={GameStatus.Undefined}>Undefined</Select.Option> */}
         </Select>
       );
     }
@@ -281,8 +288,8 @@ export default function GameTable() {
         } else if (status === GameStatus.Pending) {
           return <Tag color="blue">Pending</Tag>;
         } else {
-          // return <Tag color="orange">Normal</Tag>;
-          return <Tag color="green">Online</Tag>;
+          return <Tag color="orange">Undefined</Tag>;
+          // return <Tag color="green">Online</Tag>;
         }
         // }
       },
@@ -294,20 +301,28 @@ export default function GameTable() {
       editable: true,
       render: (_, { genre }) => {
         const genres = [];
-        if(genre & GameGenre.Card){
+        if (genre & GameGenre.Card) {
           genres.push(<Tag color="blue">Card</Tag>);
         }
-        if(genre & GameGenre.Action){
+        if (genre & GameGenre.Action) {
           genres.push(<Tag color="green">Action</Tag>);
         }
-        if(genre & GameGenre.RPG){
+        if (genre & GameGenre.RPG) {
           genres.push(<Tag color="orange">RPG</Tag>);
         }
-        if(genre & GameGenre.Strategy){
+        if (genre & GameGenre.Strategy) {
           genres.push(<Tag color="purple">Strategy</Tag>);
         }
         return genres;
       }
+    },
+    {
+      title: "Open Time",
+      dataIndex: "openTime",
+      key: "openTime",
+      editable: true,
+      render: (_, { openTime }) =>
+        openTime == 0 ? "Opening" : new Date(openTime).toLocaleDateString(),
     },
     {
       title: "URL",

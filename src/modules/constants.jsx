@@ -12,7 +12,7 @@ const Constants = {
   },
 
   GameStatus: {
-    Normal: 0,
+    Undefined: 0,
     Pending: 1,
     Online: 2,
     Removed: 3,

@@ -1,18 +1,27 @@
-import { Form, Input, Select, Button, Space, Modal, Alert } from "antd";
+import { Form, Input, Select, Button, Space, Modal, Alert, DatePicker } from "antd";
 import { PlusCircleOutlined } from "@ant-design/icons";
 import API, { requestWithAuthHeader } from "../../modules/api";
 import { useEffect, useState } from "react";
 import JSEvent from "../../utils/JSEvent";
 import Events from "../../modules/Events";
 
-export const GenreSelect = () => {
+import PropTypes from 'prop-types';
+
+export const GenreSelect = ({ value = [], onChange }) => {
+
+  GenreSelect.propTypes = {
+    value: PropTypes.array,
+    onChange: PropTypes.func,
+  };
+
   const [genres, setGenres] = useState([]);
 
-  useEffect(()=>{
+  useEffect(() => {
     const getGenres = async () => {
       try {
         const res = await requestWithAuthHeader.get(API.gameGenres);
         const { code, data, msg } = res.data;
+        console.log("genre", data)
         if (code == 0) {
           setGenres(data);
         } else {
@@ -23,10 +32,10 @@ export const GenreSelect = () => {
       }
     }
     getGenres();
-  },[]);
+  }, []);
 
-  return(
-    <Select mode="multiple">
+  return (
+    <Select mode="multiple" value={value} onChange={onChange}>
       {
         genres.map((g) => (
           <Select.Option key={g.id} value={g.id}>{g.name}</Select.Option>
@@ -51,8 +60,8 @@ export default function CreateGame() {
   };
 
   const onCreateGame = async (values) => {
-    const { name, desc, url, genre } = values;
-    console.log(name, desc, url, genre);
+    let { name, desc, url, genre, open_time } = values;
+    open_time = open_time ? open_time.valueOf() : 0;
 
     try {
       const res = await requestWithAuthHeader.post(API.gameCreate, {
@@ -60,6 +69,7 @@ export default function CreateGame() {
         desc,
         url,
         genre,
+        open_time
       });
       const { code, data, msg } = res.data;
       console.log("res", code, data, msg);
@@ -132,6 +142,14 @@ export default function CreateGame() {
           >
             <GenreSelect />
           </Form.Item>
+          <Form.Item
+            label="Open time"
+            name="open_time"
+          >
+            <DatePicker />
+            <div className="text-gray-500 text-xs">If open time is not specified, this game will be regarded as open when it is created.</div>
+          </Form.Item>
+
           {feedback && (
             <Alert
               message={feedback.msg}
