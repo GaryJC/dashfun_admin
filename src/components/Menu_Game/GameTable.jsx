@@ -304,11 +304,14 @@ export default function GameTable() {
         if (genre & GameGenre.Card) {
           genres.push(<Tag color="blue">Card</Tag>);
         }
-        if (genre & GameGenre.Action) {
-          genres.push(<Tag color="green">Action</Tag>);
+        if (genre & GameGenre.New) {
+          genres.push(<Tag color="green">New</Tag>);
         }
         if (genre & GameGenre.RPG) {
           genres.push(<Tag color="orange">RPG</Tag>);
+        }
+        if (genre & GameGenre.Popular) {
+          genres.push(<Tag color="red">Popular</Tag>);
         }
         if (genre & GameGenre.Strategy) {
           genres.push(<Tag color="purple">Strategy</Tag>);
